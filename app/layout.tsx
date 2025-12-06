@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: "Copa del Mundo 2026 - Simulador",
   description:
     "Simulador interactivo de la Copa del Mundo 2026. Crea grupos, selecciona ganadores y predice el campeón.",
-  generator: "v0.app",
   icons: {
     icon: [
       {
