@@ -1,18 +1,19 @@
 export const TEAMS_BY_SEEDING = {
   seed1: [
+    "Estados Unidos",
+    "México",
+    "Canadá",
+    "España",
     "Argentina",
     "Francia",
-    "Brasil",
     "Inglaterra",
-    "España",
-    "Alemania",
-    "Holanda",
+    "Brasil",
     "Portugal",
+    "Países Bajos",
     "Bélgica",
-    "Uruguay",
-    "Suiza",
-    "Canadá",
+    "Alemania"
   ],
+
   seed2: [
     "Croacia",
     "Marruecos",
@@ -25,8 +26,9 @@ export const TEAMS_BY_SEEDING = {
     "Corea del Sur",
     "Ecuador",
     "Austria",
-    "Australia",
+    "Australia"
   ],
+
   seed3: [
     "Noruega",
     "Panamá",
@@ -39,8 +41,9 @@ export const TEAMS_BY_SEEDING = {
     "Uzbekistán",
     "Qatar",
     "Arabia Saudita",
-    "Sudáfrica",
+    "Sudáfrica"
   ],
+
   seed4: [
     "Jordania",
     "Cabo Verde",
@@ -48,14 +51,12 @@ export const TEAMS_BY_SEEDING = {
     "Curazao",
     "Haití",
     "Nueva Zelanda",
-    "México",
-    "Estados Unidos",
     "UEFA A",
     "UEFA B",
     "UEFA C",
     "UEFA D",
     "FIFA 1",
-    "FIFA 2",
+    "FIFA 2"
   ],
 }
 

@@ -22,7 +22,7 @@ interface GroupStanding {
   goalsFor: number
   goalsAgainst: number
   points: number
-  goalDifference: number // added goal difference field
+  goalDifference: number
 }
 
 interface GroupSimulatorProps {
@@ -114,15 +114,12 @@ export default function GroupSimulator({ groups, onWinnersSelected }: GroupSimul
       })
 
       const sortedTeams = Object.values(teamStats).sort((a, b) => {
-        // First: sort by points
         if (b.points !== a.points) return b.points - a.points
 
-        // Second: sort by goal difference
         const diffA = a.goalDifference
         const diffB = b.goalDifference
         if (diffB !== diffA) return diffB - diffA
 
-        // Third: sort by goals for
         return b.goalsFor - a.goalsFor
       })
 
@@ -178,7 +175,7 @@ export default function GroupSimulator({ groups, onWinnersSelected }: GroupSimul
     })
 
     onWinnersSelected(winners, matches, standings)
-  }
+  } 
 
   return (
     <div className="space-y-8">

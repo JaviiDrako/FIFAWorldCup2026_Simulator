@@ -1,8 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import GroupsModal from "@/components/groups-modal"
+import { 
+  calculateBestThirdPlaces, 
+  assignThirdPlacesToMatches, 
+  THIRD_PLACE_POOLS 
+} from "@/lib/tournament-structure"
 
 interface KnockoutBracketProps {
   winners: Record<string, [string, string]>
@@ -85,6 +90,20 @@ export default function KnockoutBracket({ winners, matches = {}, groups = {}, st
   >({})
   const matchRefs = useRef<Record<number, HTMLDivElement | null>>({})
   const columnRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const thirdPlaceAssignments = useMemo(() => {
+    if (standings && Object.keys(standings).length > 0) {
+      
+      const bestThirds = calculateBestThirdPlaces(standings)
+      
+      const assignments = assignThirdPlacesToMatches(bestThirds, winners)
+      
+      console.log("Mejores terceros calculados:", bestThirds)
+      console.log("Asignaciones a partidos:", assignments)
+      
+      return assignments
+    }
+    return null
+  }, [standings, winners])
 
   useEffect(() => {
     const positions: Record<number, { top: number; height: number; centerY: number }> = {}
@@ -110,10 +129,17 @@ export default function KnockoutBracket({ winners, matches = {}, groups = {}, st
     setMatchPositions(positions)
   }, [results])
 
-  const getTeamForPosition = (position: string): string | undefined => {
+  const getTeamForPosition = (position: string, matchId?: number): string | undefined => {
     if (position.startsWith("Third")) {
+      if (thirdPlaceAssignments && matchId !== undefined) {
+        const assignedTeam = thirdPlaceAssignments[matchId]
+        if (assignedTeam) {
+          return assignedTeam
+        }
+      }
       return "Por definir (3er lugar)"
     }
+    
     const [groupLetter, placement] = position.split("-")
     const posKey = (Number.parseInt(placement) === 1 ? 0 : 1) as 0 | 1
     return winners[groupLetter]?.[posKey]
@@ -133,8 +159,8 @@ export default function KnockoutBracket({ winners, matches = {}, groups = {}, st
     const round16Match = ROUND_16_MATCHUPS.find((m) => m.id === matchId)
     if (round16Match) {
       return {
-        team1: getTeamForPosition(round16Match.pos1),
-        team2: getTeamForPosition(round16Match.pos2),
+        team1: getTeamForPosition(round16Match.pos1, matchId),
+        team2: getTeamForPosition(round16Match.pos2, matchId),
       }
     }
 
