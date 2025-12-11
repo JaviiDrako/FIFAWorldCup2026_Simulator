@@ -38,7 +38,7 @@ export const KNOCKOUT_MATCHES_CONFIG = [
     round: "round16",
     date: "Lunes, 29 de junio",
     stadium: "Houston Stadium",
-    groupMatch: ["E", 1, "F", 2], // 1º Group E v 2º Group F 
+    groupMatch: ["C", 1, "F", 2], // 1º Group C v 2º Group F 
   },
   {
     id: 77,
@@ -223,31 +223,57 @@ function calculateGroupPriority(thirds: ThirdPlaceTeam[]): Record<string, number
 
 // MAIN FUNCTIONS
 
-// Function to calculate the best 8 third places
+// Function to calculate the best 8 third places or use manual selection
 export function calculateBestThirdPlaces(
-  standings: Record<string, Array<{team: string, points: number, goalDifference: number, goalsFor: number}>>
-): ThirdPlaceTeam[] {
-  const thirdPlaces: ThirdPlaceTeam[] = []
+  standings: Record<string, any[]>,
+  manualThirdPlaces?: string[]
+): Array<{team: string, group: string, points: number, goalDifference: number, goalsFor: number}> {
   
-  Object.entries(standings).forEach(([group, groupStandings]) => {
-    if (groupStandings.length >= 3) {
+  // If there are manually selected thirds, use them
+  if (manualThirdPlaces && manualThirdPlaces.length > 0) {
+    const manualThirds: Array<{team: string, group: string, points: number, goalDifference: number, goalsFor: number}> = []
+    
+    Object.entries(standings).forEach(([groupName, groupStandings]) => {
       const thirdPlace = groupStandings[2]
+      if (thirdPlace && manualThirdPlaces.includes(thirdPlace.team)) {
+        manualThirds.push({
+          team: thirdPlace.team,
+          group: groupName,
+          points: thirdPlace.points || 0,
+          goalDifference: thirdPlace.goalDifference || 0,
+          goalsFor: thirdPlace.goalsFor || 0
+        })
+      }
+    })
+    
+    const orderedThirds = manualThirdPlaces
+      .map(teamName => manualThirds.find(t => t.team === teamName))
+      .filter(Boolean) as Array<{team: string, group: string, points: number, goalDifference: number, goalsFor: number}>
+    
+    return orderedThirds.slice(0, 8)
+  }
+  
+  // Normal Calculus (complete mode)
+  const thirdPlaces: Array<{team: string, group: string, points: number, goalDifference: number, goalsFor: number}> = []
+  
+  Object.entries(standings).forEach(([groupName, groupStandings]) => {
+    if (groupStandings.length >= 3) {
+      const third = groupStandings[2]
       thirdPlaces.push({
-        group,
-        team: thirdPlace.team,
-        points: thirdPlace.points,
-        goalDifference: thirdPlace.goalDifference,
-        goalsFor: thirdPlace.goalsFor
+        team: third.team,
+        group: groupName,
+        points: third.points,
+        goalDifference: third.goalDifference,
+        goalsFor: third.goalsFor
       })
     }
   })
   
-  // Sort by FIFA critera: points > goal difference > goals
   return thirdPlaces.sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points
     if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference
     return b.goalsFor - a.goalsFor
-  }).slice(0, 8)
+  })
 }
 
 // Fallback greedy if the perfect matching fails
@@ -266,28 +292,26 @@ function greedyFallbackAssignment(
     .filter(matchHasThirdPlace)
   const remainingMatches = allMatchIds.filter(id => !assignedMatches.has(id))
   
-  // Assign greedy priority to groups with fewer options 
+  // Assign priority to groups with fewer options 
   while (remainingThirds.length > 0 && remainingMatches.length > 0) {
     // Calculate options for each group
     const groupOptions = remainingThirds.map(third => ({
       third,
       options: remainingMatches.filter(matchId => {
-        // Verify compatibility
         const pool = THIRD_PLACE_POOLS[matchId]
         if (!pool || !pool.includes(third.group)) return false
         
-        // Verify that a team does not face its own group 
         const opponent = getMatchOpponentGroup(matchId)
         return !opponent || opponent.group !== third.group
       }).length
     }))
     
-    // Sort by fewer options first 
+    // Sort by those with fewer options first
     groupOptions.sort((a, b) => a.options - b.options)
     
     const { third } = groupOptions[0]
     
-    // Find compatible matches 
+    // Find compatible matches
     const availableMatches = remainingMatches.filter(matchId => {
       const pool = THIRD_PLACE_POOLS[matchId]
       if (!pool || !pool.includes(third.group)) return false
@@ -297,11 +321,10 @@ function greedyFallbackAssignment(
     })
     
     if (availableMatches.length > 0) {
-      // Assign to the first available match 
+      // Assign to the first available match
       const chosenMatch = availableMatches[0]
       assignments[chosenMatch] = third.team
       
-      // Update lists
       const thirdIndex = remainingThirds.findIndex(t => t.group === third.group)
       remainingThirds.splice(thirdIndex, 1)
       
@@ -321,7 +344,6 @@ function greedyFallbackAssignment(
         const matchIndex = remainingMatches.indexOf(anyMatch)
         remainingMatches.splice(matchIndex, 1)
       } else {
-        // There are no posible match for this group
         const thirdIndex = remainingThirds.findIndex(t => t.group === third.group)
         remainingThirds.splice(thirdIndex, 1)
       }
@@ -346,10 +368,92 @@ export function assignThirdPlacesToMatches(
     return assignments
   }
   
-  // 1. Prepare data for bipartite matching
-  const groups = bestThirds.map(t => t.group)
+  if (bestThirds.length <= 8) {
+    
+    let availableThirds = [...bestThirds]
+    let availableMatches = [...thirdPlaceMatchIds]
+    
+    const calculateOptionsForGroup = (group: string, matches: number[]): number[] => {
+      return matches.filter(matchId => {
+        const pool = THIRD_PLACE_POOLS[matchId]
+        if (!pool || !pool.includes(group)) return false
+        
+        const opponent = getMatchOpponentGroup(matchId)
+        return !opponent || opponent.group !== group
+      })
+    }
+    
+    const calculateAllOptions = (thirds: ThirdPlaceTeam[], matches: number[]) => {
+      return thirds.map(third => ({
+        third,
+        options: calculateOptionsForGroup(third.group, matches),
+        optionsCount: calculateOptionsForGroup(third.group, matches).length
+      }))
+    }
+    
+    // While there are groups and matches available 
+    while (availableThirds.length > 0 && availableMatches.length > 0) {
+      // 1. Calculate current options for every group
+      const groupsWithOptions = calculateAllOptions(availableThirds, availableMatches)
+      
+      // 2. Sort by fewer options first
+      groupsWithOptions.sort((a, b) => {
+        if (a.optionsCount !== b.optionsCount) {
+          return a.optionsCount - b.optionsCount
+        }
+        const appearances: Record<string, number> = {
+          'A': 2, 'B': 2, 'C': 3, 'D': 3, 'E': 5, 'F': 5,
+          'G': 2, 'H': 4, 'I': 6, 'J': 5, 'K': 1, 'L': 1
+        }
+        return appearances[a.third.group] - appearances[b.third.group]
+      })
+      
+      // 3. Choose the group with the fewest options (or the most restricted) 
+      const { third, options } = groupsWithOptions[0]
+      
+      // 4. If it has options, assign to the first available match. 
+      if (options.length > 0) {
+        const chosenMatch = options[0]
+        assignments[chosenMatch] = third.team
+        
+        // 5. Update lists
+        // Remove the assigned group
+        const thirdIndex = availableThirds.findIndex(t => t.group === third.group)
+        availableThirds.splice(thirdIndex, 1)
+        
+        // Remover the assigned match
+        const matchIndex = availableMatches.indexOf(chosenMatch)
+        availableMatches.splice(matchIndex, 1)
+      } else {
+        // 6. If it has no compatible options, try any match in the pool. 
+        const anyMatch = availableMatches.find(matchId => 
+          THIRD_PLACE_POOLS[matchId]?.includes(third.group)
+        )
+        
+        if (anyMatch) {
+          assignments[anyMatch] = third.team
+          const thirdIndex = availableThirds.findIndex(t => t.group === third.group)
+          availableThirds.splice(thirdIndex, 1)
+          
+          const matchIndex = availableMatches.indexOf(anyMatch)
+          availableMatches.splice(matchIndex, 1)
+        } else {
+          // 7. If there is no possible match for this group, delete it. 
+          console.warn(`No hay match posible para grupo ${third.group}, eliminando`)
+          const thirdIndex = availableThirds.findIndex(t => t.group === third.group)
+          availableThirds.splice(thirdIndex, 1)
+        }
+      }
+    }
+    
+    return assignments
+  }
   
-  // 2. Compatibility matrix: group x matchId 
+  // For complete mode (more than 8 third places), use the matching algorithm
+  // 1. Prepare data for bipartite matching
+  const groups = bestThirds.slice(0, 8).map(t => t.group) // Only the top 8
+  
+  // 2. Compatibility matrix: group x matchId
   const compatibility: boolean[][] = groups.map(group => {
     return thirdPlaceMatchIds.map(matchId => {
       if (!THIRD_PLACE_POOLS[matchId]?.includes(group)) return false
@@ -359,11 +463,11 @@ export function assignThirdPlacesToMatches(
     })
   })
   
-  // 3. Bipartite matching algorithm (DFS with backtracking) 
+  // 3. Bipartite matching (DFS with backtracking)
   const matchForGroup: Record<string, number> = {}
   const matchForMatch: Record<number, string> = {}
   
-  // DFS function to find augmenting path 
+  // DFS function to find augmenting path
   const dfs = (groupIndex: number, visited: boolean[]): boolean => {
     const group = groups[groupIndex]
     
@@ -385,7 +489,7 @@ export function assignThirdPlacesToMatches(
     return false
   }
   
-  // 4. Order groups by degree of restriction (fewer options first) 
+  // 4. Sort groups by restriction degree (fewer options first)
   const groupsWithOptions = groups.map((group, index) => ({
     group,
     index,
@@ -394,18 +498,18 @@ export function assignThirdPlacesToMatches(
   
   groupsWithOptions.sort((a, b) => a.options - b.options)
   
-  // 5. Attempt matching for each group (in restriction order)
+  // 5. Try matching for each group (in order of restriction)
   for (const { group, index } of groupsWithOptions) {
     const visited = new Array(thirdPlaceMatchIds.length).fill(false)
     if (!dfs(index, visited)) {
-      // No matching found - use fallback greedy 
-      console.warn(`No se pudo asignar grupo ${group}, usando fallback`)
-      return greedyFallbackAssignment(bestThirds, winners, matchForMatch)
+      // No matching found - use greedy fallback
+      console.warn(`Could not assign group ${group}, using fallback`)
+      return greedyFallbackAssignment(bestThirds.slice(0, 8), winners, matchForMatch)
     }
   }
   
-  // 6. Convert matching to assignments 
-  bestThirds.forEach(third => {
+  // 6. Convert matching to assignments
+  bestThirds.slice(0, 8).forEach(third => {
     const matchId = matchForGroup[third.group]
     if (matchId) {
       assignments[matchId] = third.team
@@ -414,3 +518,4 @@ export function assignThirdPlacesToMatches(
   
   return assignments
 }
+

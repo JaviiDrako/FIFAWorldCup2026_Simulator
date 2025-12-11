@@ -17,6 +17,7 @@ export default function Home() {
   const [originalGroupsWithDetails, setOriginalGroupsWithDetails] = useState<Record<string, Team[]> | null>(null)
   const [cameFromOfficial, setCameFromOfficial] = useState(false)
   const [playoffSelections, setPlayoffSelections] = useState<Record<string, string>>({})
+  const [bestThirdPlaces, setBestThirdPlaces] = useState<string[]>([]) 
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -49,17 +50,31 @@ export default function Home() {
     
     setCreatedGroups(simplifiedGroups)
     setStage("simulator")
+    setBestThirdPlaces([]) 
   }
 
   const handleOfficialGroupsSelected = (groups: Record<string, string[]>, selections: Record<string, string>) => {
     setCreatedGroups(groups)
     setPlayoffSelections(selections)
     setStage("simulator")
+    setBestThirdPlaces([]) 
   }
 
-  const handleWinnersSelected = (selectedWinners: any, matches: any, standings: any) => {
+  const handleWinnersSelected = (selectedWinners: any, matches: any, standings: any, selectedThirdPlaces?: string[]) => {
+    console.log("handleWinnersSelected called")
+    console.log("Received selectedThirdPlaces:", selectedThirdPlaces)
+    console.log("Length:", selectedThirdPlaces?.length || 0)
+    
     setWinners(selectedWinners)
     setGroupsData({ matches, standings })
+    
+    if (selectedThirdPlaces && selectedThirdPlaces.length > 0) {
+      console.log("Setting bestThirdPlaces:", selectedThirdPlaces)
+      setBestThirdPlaces(selectedThirdPlaces)
+    } else {
+      console.log("No third places received, setting empty array")
+      setBestThirdPlaces([])
+    }
     setStage("knockout")
   }
 
@@ -72,6 +87,7 @@ export default function Home() {
       }
       setWinners(null)
       setGroupsData(null)
+      setBestThirdPlaces([]) 
       if (!cameFromOfficial) {
         setPlayoffSelections({})
       }
@@ -83,6 +99,7 @@ export default function Home() {
       setOriginalGroupsWithDetails(null)
       setCameFromOfficial(false)
       setPlayoffSelections({})
+      setBestThirdPlaces([])
     }
   }
 
@@ -94,6 +111,7 @@ export default function Home() {
     setOriginalGroupsWithDetails(null)
     setCameFromOfficial(false)
     setPlayoffSelections({})
+    setBestThirdPlaces([]) 
   }
 
   return (
@@ -163,7 +181,8 @@ export default function Home() {
               matches={groupsData?.matches}
               groups={originalGroupsWithDetails || createdGroups}
               standings={groupsData?.standings}
-              playoffSelections={playoffSelections} 
+              playoffSelections={playoffSelections}
+              bestThirdPlaces={bestThirdPlaces} 
             />
           )}
         </div>

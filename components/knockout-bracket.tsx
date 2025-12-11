@@ -17,6 +17,7 @@ interface KnockoutBracketProps {
   groups?: Record<string, string[]>
   standings?: Record<string, any[]>
   playoffSelections?: Record<string, string>
+  bestThirdPlaces?: string[]
 }
 
 const ROUND_16_MATCHUPS = [
@@ -69,19 +70,19 @@ const ESPACIOS = {
     espacioEntrePartidos: "space-y-3",
   },
   COLUMNA_8VOS: {
-    espacioInicio: "pt-36.5",
-    espacioEntrePartidos: "space-y-56.5",
+    espacioInicio: "pt-38.5",
+    espacioEntrePartidos: "space-y-59.5",
   },
   COLUMNA_4TOS: {
-    espacioInicio: "pt-90",
-    espacioEntrePartidos: "space-y-163",
+    espacioInicio: "pt-95",
+    espacioEntrePartidos: "space-y-172",
   },
   COLUMNA_SEMIS: {
-    espacioInicio: "pt-198",
-    espacioEntrePartidos: "space-y-375",
+    espacioInicio: "pt-208",
+    espacioEntrePartidos: "space-y-400",
   },
   COLUMNA_FINAL: {
-    espacioInicio: "pt-406",
+    espacioInicio: "pt-429",
     espacioEntrePartidos: "space-y-3",
   },
 }
@@ -91,7 +92,8 @@ export default function KnockoutBracket({
   matches = {}, 
   groups = {}, 
   standings = {},
-  playoffSelections = {} 
+  playoffSelections = {},
+  bestThirdPlaces = []
 }: KnockoutBracketProps) {
   const [results, setResults] = useState<Record<number, { goals1: number | null; goals2: number | null }>>({})
   const [matchPositions, setMatchPositions] = useState<
@@ -120,18 +122,15 @@ export default function KnockoutBracket({
   
   const thirdPlaceAssignments = useMemo(() => {
     if (standings && Object.keys(standings).length > 0) {
+      const bestThirds = calculateBestThirdPlaces(standings, bestThirdPlaces)
       
-      const bestThirds = calculateBestThirdPlaces(standings)
-      
-      const assignments = assignThirdPlacesToMatches(bestThirds, winners)
-      
-      console.log("Mejores terceros calculados:", bestThirds)
-      console.log("Asignaciones a partidos:", assignments)
-      
-      return assignments
+      if (bestThirds.length > 0) {
+        const assignments = assignThirdPlacesToMatches(bestThirds, winners)
+        return assignments
+      }
     }
     return null
-  }, [standings, winners])
+  }, [standings, winners, bestThirdPlaces])
 
   useEffect(() => {
     const positions: Record<number, { top: number; height: number; centerY: number }> = {}
@@ -195,7 +194,7 @@ export default function KnockoutBracket({
 
     // Tie managment
     if (result.goals1 === result.goals2) {
-      return undefined // Pending: 0 penalties can be implemented
+      return undefined
     }
 
     return result.goals1 > result.goals2 ? matchData.team1 : matchData.team2
@@ -532,7 +531,7 @@ export default function KnockoutBracket({
               const pos2 = matchPositions[match2.id]
 
               if (pos1 && pos2) {
-                const x = 291 
+                const x = 315 
                 const y1 = pos1.centerY
                 const y2 = pos2.centerY
 
@@ -565,7 +564,7 @@ export default function KnockoutBracket({
               const pos2 = matchPositions[match2.id]
 
               if (pos1 && pos2) {
-                const x = 579
+                const x = 603
                 const y1 = pos1.centerY
                 const y2 = pos2.centerY
 
@@ -598,7 +597,7 @@ export default function KnockoutBracket({
               const pos2 = matchPositions[match2.id]
 
               if (pos1 && pos2) {
-                const x = 867
+                const x = 891
                 const y1 = pos1.centerY
                 const y2 = pos2.centerY
 
@@ -631,7 +630,7 @@ export default function KnockoutBracket({
               const pos2 = matchPositions[match2.id]
 
               if (pos1 && pos2) {
-                const x = 1155 
+                const x = 1179 
                 const y1 = pos1.centerY
                 const y2 = pos2.centerY
 
@@ -670,6 +669,7 @@ export default function KnockoutBracket({
                 matches={matches} 
                 groups={groups} 
                 standings={standings}
+                bestThirdPlaces={bestThirdPlaces}
                 variant="floating"
               />
             </div>
@@ -839,10 +839,10 @@ export default function KnockoutBracket({
       </div>
 
       <div className="overflow-x-auto pb-4 relative z-10">
-        <div id="bracket-content" className="relative bracket-container" style={{ minWidth: "1620px", minHeight: "1020px" }}> 
+        <div id="bracket-content" className="relative bracket-container" style={{ minWidth: "1500px", minHeight: "1020px" }}> 
           <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-white/50 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-2xl"></div>
           
-          <div className="inline-flex gap-14 min-w-full px-8"> 
+          <div className="inline-flex gap-14 min-w-full px-14"> 
             <div
               ref={(el) => {
                 if (el) columnRefs.current["16vos"] = el
@@ -1061,6 +1061,71 @@ export default function KnockoutBracket({
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-30"></div>
         </div>
       </div>
+
+      <div className="mt-0 pt-8 relative">
+
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-white/40 backdrop-blur-sm rounded-lg border border-gray-200/50 p-4 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="text-center md:text-left">
+                <h4 className="text-sm font-semibold text-gray-700 mb-1">
+                  FIFA World Cup 2026 Simulator
+                </h4>
+                <p className="text-xs text-gray-600 max-w-md">
+                  Simulador no oficial • Creado por Javier Pérez Adriázola • Datos FIFA oficiales
+                </p>
+              </div>
+              
+              <div className="flex flex-col items-center md:items-end gap-2">
+                <div className="flex gap-3">
+                  <a 
+                    href="https://github.com/JaviiDrako/FIFAWorldCup2026_Simulator/tree/master" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                    </svg>
+                    <span>GitHub</span>
+                  </a>
+                  
+                  <a 
+                    href="https://www.linkedin.com/in/javier-esteban-p%C3%A9rez-adri%C3%A1zola-33a802276/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    <span>LinkedIn</span>
+                  </a>
+                </div>
+                
+                <div className="flex flex-wrap gap-1.5 justify-center">
+                  <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                    Next.js
+                  </span>
+                  <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                    React
+                  </span>
+                  <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full border border-gray-200">
+                    TypeScript
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-3 pt-3 border-t border-gray-200/50 text-center">
+              <p className="text-xs text-gray-500">
+                Proyecto de simulación no oficial • FIFA™ es marca registrada • Diciembre 2025
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   )
 }

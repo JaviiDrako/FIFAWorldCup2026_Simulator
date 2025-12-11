@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { GROUPS } from "@/lib/teams-data"
-import { Eye, Trophy, Award, Sparkles } from "lucide-react"
+import { Eye, Trophy, Award, Sparkles, X } from "lucide-react"
 import { calculateBestThirdPlaces } from "@/lib/tournament-structure"
 import { getFlagUrl, getDynamicCountryCode } from "@/lib/teams-data"
 import { Shield } from "lucide-react"
@@ -15,13 +15,17 @@ interface GroupsModalProps {
   groups: Record<string, string[]>
   standings: Record<string, any[]>
   playoffSelections?: Record<string, string>
+  bestThirdPlaces?: string[]
+  variant?: "default" | "floating" 
 }
 
 export default function GroupsModal({ 
   matches, 
   groups, 
   standings,
-  playoffSelections = {} 
+  playoffSelections = {},
+  bestThirdPlaces = [],
+  variant = "default"
 }: GroupsModalProps) {
   const [open, setOpen] = useState(false)
 
@@ -30,19 +34,19 @@ export default function GroupsModal({
     return getDynamicCountryCode(teamName, playoffSelections)
   }
 
-  const bestThirdPlaces = useMemo(() => {
+  const bestThirdPlacesCalculated = useMemo(() => {
     if (standings && Object.keys(standings).length > 0) {
-      return calculateBestThirdPlaces(standings)
+      return calculateBestThirdPlaces(standings, bestThirdPlaces)
     }
     return []
-  }, [standings])
+  }, [standings, bestThirdPlaces])
 
   const hasTies = useMemo(() => {
-    if (bestThirdPlaces.length < 2) return false
+    if (bestThirdPlacesCalculated.length < 2) return false
     
-    for (let i = 0; i < bestThirdPlaces.length - 1; i++) {
-      const current = bestThirdPlaces[i]
-      const next = bestThirdPlaces[i + 1]
+    for (let i = 0; i < bestThirdPlacesCalculated.length - 1; i++) {
+      const current = bestThirdPlacesCalculated[i]
+      const next = bestThirdPlacesCalculated[i + 1]
       
       if (current.points === next.points && 
           current.goalDifference === next.goalDifference && 
@@ -51,20 +55,34 @@ export default function GroupsModal({
       }
     }
     return false
-  }, [bestThirdPlaces])
+  }, [bestThirdPlacesCalculated])
+
+  const triggerButton = variant === "floating" ? (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      className="gap-2 bg-transparent backdrop-blur-sm border-white/40 shadow-xl hover:bg-black hover:shadow-2xl transition-all"
+      data-modal-trigger="groups-modal"
+    >
+      <Eye className="w-4 h-4" />
+      Ver Grupos
+    </Button>
+  ) : (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      className="gap-2 bg-transparent"
+      data-modal-trigger="groups-modal"
+    >
+      <Eye className="w-4 h-4" />
+      Ver Grupos
+    </Button>
+  )
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="gap-2 bg-transparent"
-          data-modal-trigger="groups-modal"
-        >
-          <Eye className="w-4 h-4" />
-          Ver Grupos
-        </Button>
+        {triggerButton}
       </DialogTrigger>
       <DialogContent className="w-[1400px] h-[800px] overflow-y-auto" style={{ maxWidth: '95vw' }}>
         <div id="groups-content" className="p-4">
@@ -106,14 +124,15 @@ export default function GroupsModal({
                                 {idx + 1}
                               </span>
                               
-                              <div className="w-6 h-4 flex-shrink-0">
+                              <div className="w-6 h-4 flex-shrink-0 relative overflow-hidden">
                                 <img
-                                  src={getFlagUrl(flagCode, 'w20')}
+                                  src={getFlagUrl(flagCode, 'w40')}
                                   alt={team.team}
-                                  className="w-full h-full object-cover rounded border border-gray-300"
+                                  className="absolute inset-0 w-full h-full object-cover rounded border border-gray-300"
+                                  style={{ objectFit: 'cover' }}
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none'
-                                    e.currentTarget.parentElement!.innerHTML = '<div class="w-6 h-4 bg-gray-200 rounded border border-gray-300 flex items-center justify-center"><Shield className="w-2 h-2 text-gray-400" /></div>'
+                                    e.currentTarget.parentElement!.innerHTML = '<div class="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-300 rounded border border-gray-300 flex items-center justify-center"><Shield className="w-2 h-2 text-gray-400" /></div>'
                                   }}
                                 />
                               </div>
@@ -154,7 +173,7 @@ export default function GroupsModal({
           </div>
         </div>
 
-        {bestThirdPlaces.length > 0 && (
+        {bestThirdPlacesCalculated.length > 0 && (
           <div className="mt-8 pt-6 border-t">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Award className="w-5 h-5 text-purple-600" />
@@ -192,8 +211,8 @@ export default function GroupsModal({
                       </tr>
                     </thead>
                     <tbody>
-                      {bestThirdPlaces.map((third, index) => {
-                        const nextThird = bestThirdPlaces[index + 1]
+                      {bestThirdPlacesCalculated.map((third, index) => {
+                        const nextThird = bestThirdPlacesCalculated[index + 1]
                         const isTied = nextThird && 
                           third.points === nextThird.points && 
                           third.goalDifference === nextThird.goalDifference && 
@@ -223,14 +242,15 @@ export default function GroupsModal({
                               </span>
                             </td>
                             <td className="py-3 px-3">
-                              <div className="w-8 h-6 flex-shrink-0">
+                              <div className="w-8 h-6 flex-shrink-0 relative overflow-hidden">
                                 <img
-                                  src={getFlagUrl(flagCode, 'w20')}
+                                  src={getFlagUrl(flagCode, 'w40')}
                                   alt={third.team}
-                                  className="w-full h-full object-cover rounded border border-gray-300"
+                                  className="absolute inset-0 w-full h-full object-cover rounded border border-gray-300"
+                                  style={{ objectFit: 'cover' }}
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none'
-                                    e.currentTarget.parentElement!.innerHTML = '<div class="w-8 h-6 bg-gray-200 rounded border border-gray-300 flex items-center justify-center"><Shield className="w-3 h-3 text-gray-400" /></div>'
+                                    e.currentTarget.parentElement!.innerHTML = '<div class="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-300 rounded border border-gray-300 flex items-center justify-center"><Shield className="w-3 h-3 text-gray-400" /></div>'
                                   }}
                                 />
                               </div>
@@ -258,8 +278,9 @@ export default function GroupsModal({
                                   CLASIFICA
                                 </span>
                               ) : (
-                                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                                  Eliminado
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold">
+                                  <X className="w-3 h-3" /> 
+                                  ELIMINADO
                                 </span>
                               )}
                             </td>

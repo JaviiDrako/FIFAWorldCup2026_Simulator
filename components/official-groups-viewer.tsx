@@ -168,9 +168,9 @@ export default function OfficialGroupsViewer({ onContinue }: OfficialGroupsViewe
     <div className="space-y-8">
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-4 mb-4">
-          <Trophy className="h-12 w-12 text-yellow-500" />
-          <h1 className="text-4xl font-bold text-gray-800">Grupos Oficiales 2026</h1>
-          <CheckCircle className="h-12 w-12 text-green-500" />
+          <h1 className="text-6xl font-bold text-gray-800 mb-1.5 tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          Grupos Oficiales 2026
+          </h1>
         </div>
         <p className="text-gray-600 text-lg">
           Grupos reales del sorteo del <span className="font-semibold text-blue-600">5 de diciembre de 2025</span>
@@ -186,11 +186,11 @@ export default function OfficialGroupsViewer({ onContinue }: OfficialGroupsViewe
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-red-500" />
-            <span>Junio-Julio 2026</span>
+            <span>11 Jun 2026</span>
           </div>
         </div>
 
-        <div className="mt-6 max-w-3xl mx-auto">
+        <div className="mt-6 w-120 mx-auto">
           <Alert className="bg-blue-50 border-blue-200">
             <Globe className="h-4 w-4" />
             <AlertDescription>
@@ -203,7 +203,7 @@ export default function OfficialGroupsViewer({ onContinue }: OfficialGroupsViewe
                   <li>Mantener el <span className="font-medium">placeholder oficial</span> (ej: "Ganador UEFA A")</li>
                   <li>O seleccionar un <span className="font-medium">país específico</span> que podría clasificar</li>
                 </ul>
-                <div className="flex items-center gap-4 mt-2 text-xs">
+                <div className="flex items-center justify-center gap-4 mt-2 text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-300"></div>
                     <span className="text-blue-700">Placeholder oficial</span>

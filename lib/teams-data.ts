@@ -2,6 +2,7 @@ export interface Team {
   name: string
   confederation: string
   code: string 
+  abbreviation: string
   isHost?: boolean
   fifaRanking?: number
   isPlayoff?: boolean
@@ -21,77 +22,80 @@ export const CONFEDERATIONS = {
 const TEAMS_CONFEDERATION_MAP: Record<string, { 
   confederation: string, 
   code: string,
+  abbreviation: string,
   isHost?: boolean, 
   fifaRanking?: number, 
   isPlayoff?: boolean, 
   playoffGroup?: string 
 }> = {
   // POT 1 - Seeded teams (with approximate FIFA ranking) 
-  "Estados Unidos": { confederation: CONFEDERATIONS.CONCACAF, code: "US", isHost: true, fifaRanking: 11 },
-  "México": { confederation: CONFEDERATIONS.CONCACAF, code: "MX", isHost: true, fifaRanking: 12 },
-  "Canadá": { confederation: CONFEDERATIONS.CONCACAF, code: "CA", isHost: true, fifaRanking: 37 },
-  "España": { confederation: CONFEDERATIONS.UEFA, code: "ES", fifaRanking: 1 },
-  "Argentina": { confederation: CONFEDERATIONS.CONMEBOL, code: "AR", fifaRanking: 2 },
-  "Francia": { confederation: CONFEDERATIONS.UEFA, code: "FR", fifaRanking: 3 },
-  "Inglaterra": { confederation: CONFEDERATIONS.UEFA, code: "GB", fifaRanking: 4 }, // UK usa GB
-  "Brasil": { confederation: CONFEDERATIONS.CONMEBOL, code: "BR", fifaRanking: 5 },
-  "Portugal": { confederation: CONFEDERATIONS.UEFA, code: "PT", fifaRanking: 6 },
-  "Países Bajos": { confederation: CONFEDERATIONS.UEFA, code: "NL", fifaRanking: 7 },
-  "Bélgica": { confederation: CONFEDERATIONS.UEFA, code: "BE", fifaRanking: 8 },
-  "Alemania": { confederation: CONFEDERATIONS.UEFA, code: "DE", fifaRanking: 9 },
+  "Estados Unidos": { confederation: CONFEDERATIONS.CONCACAF, code: "US", abbreviation: "USA", isHost: true, fifaRanking: 11 },
+  "México": { confederation: CONFEDERATIONS.CONCACAF, code: "MX", abbreviation: "MEX", isHost: true, fifaRanking: 12 },
+  "Canadá": { confederation: CONFEDERATIONS.CONCACAF, code: "CA", abbreviation: "CAN", isHost: true, fifaRanking: 37 },
+  "España": { confederation: CONFEDERATIONS.UEFA, code: "ES", abbreviation: "ESP", fifaRanking: 1 },
+  "Argentina": { confederation: CONFEDERATIONS.CONMEBOL, code: "AR", abbreviation: "ARG", fifaRanking: 2 },
+  "Francia": { confederation: CONFEDERATIONS.UEFA, code: "FR", abbreviation: "FRA", fifaRanking: 3 },
+  "Inglaterra": { confederation: CONFEDERATIONS.UEFA, code: "GB", abbreviation: "ENG", fifaRanking: 4 },
+  "Brasil": { confederation: CONFEDERATIONS.CONMEBOL, code: "BR", abbreviation: "BRA", fifaRanking: 5 },
+  "Portugal": { confederation: CONFEDERATIONS.UEFA, code: "PT", abbreviation: "POR", fifaRanking: 6 },
+  "Países Bajos": { confederation: CONFEDERATIONS.UEFA, code: "NL", abbreviation: "NED", fifaRanking: 7 },
+  "Bélgica": { confederation: CONFEDERATIONS.UEFA, code: "BE", abbreviation: "BEL", fifaRanking: 8 },
+  "Alemania": { confederation: CONFEDERATIONS.UEFA, code: "DE", abbreviation: "GER", fifaRanking: 9 },
   
   // POT 2
-  "Croacia": { confederation: CONFEDERATIONS.UEFA, code: "HR" },
-  "Marruecos": { confederation: CONFEDERATIONS.CAF, code: "MA" },
-  "Colombia": { confederation: CONFEDERATIONS.CONMEBOL, code: "CO" },
-  "Uruguay": { confederation: CONFEDERATIONS.CONMEBOL, code: "UY" },
-  "Suiza": { confederation: CONFEDERATIONS.UEFA, code: "CH" },
-  "Japón": { confederation: CONFEDERATIONS.AFC, code: "JP" },
-  "Senegal": { confederation: CONFEDERATIONS.CAF, code: "SN" },
-  "Irán": { confederation: CONFEDERATIONS.AFC, code: "IR" },
-  "Corea del Sur": { confederation: CONFEDERATIONS.AFC, code: "KR" },
-  "Ecuador": { confederation: CONFEDERATIONS.CONMEBOL, code: "EC" },
-  "Austria": { confederation: CONFEDERATIONS.UEFA, code: "AT" },
-  "Australia": { confederation: CONFEDERATIONS.AFC, code: "AU" },
+  "Croacia": { confederation: CONFEDERATIONS.UEFA, code: "HR", abbreviation: "CRO" },
+  "Marruecos": { confederation: CONFEDERATIONS.CAF, code: "MA", abbreviation: "MAR" },
+  "Colombia": { confederation: CONFEDERATIONS.CONMEBOL, code: "CO", abbreviation: "COL" },
+  "Uruguay": { confederation: CONFEDERATIONS.CONMEBOL, code: "UY", abbreviation: "URU" },
+  "Suiza": { confederation: CONFEDERATIONS.UEFA, code: "CH", abbreviation: "SUI" },
+  "Japón": { confederation: CONFEDERATIONS.AFC, code: "JP", abbreviation: "JPN" },
+  "Senegal": { confederation: CONFEDERATIONS.CAF, code: "SN", abbreviation: "SEN" },
+  "Irán": { confederation: CONFEDERATIONS.AFC, code: "IR", abbreviation: "IRN" },
+  "Corea del Sur": { confederation: CONFEDERATIONS.AFC, code: "KR", abbreviation: "KOR" },
+  "Ecuador": { confederation: CONFEDERATIONS.CONMEBOL, code: "EC", abbreviation: "ECU" },
+  "Austria": { confederation: CONFEDERATIONS.UEFA, code: "AT", abbreviation: "AUT" },
+  "Australia": { confederation: CONFEDERATIONS.AFC, code: "AU", abbreviation: "AUS" },
   
   // POT 3
-  "Noruega": { confederation: CONFEDERATIONS.UEFA, code: "NO" },
-  "Panamá": { confederation: CONFEDERATIONS.CONCACAF, code: "PA" },
-  "Egipto": { confederation: CONFEDERATIONS.CAF, code: "EG" },
-  "Argelia": { confederation: CONFEDERATIONS.CAF, code: "DZ" },
-  "Escocia": { confederation: CONFEDERATIONS.UEFA, code: "GB", isPlayoff: true }, // Reino Unido
-  "Paraguay": { confederation: CONFEDERATIONS.CONMEBOL, code: "PY" },
-  "Túnez": { confederation: CONFEDERATIONS.CAF, code: "TN" },
-  "Costa de Marfil": { confederation: CONFEDERATIONS.CAF, code: "CI" },
-  "Uzbekistán": { confederation: CONFEDERATIONS.AFC, code: "UZ" },
-  "Qatar": { confederation: CONFEDERATIONS.AFC, code: "QA" },
-  "Arabia Saudita": { confederation: CONFEDERATIONS.AFC, code: "SA" },
-  "Sudáfrica": { confederation: CONFEDERATIONS.CAF, code: "ZA" },
+  "Noruega": { confederation: CONFEDERATIONS.UEFA, code: "NO", abbreviation: "NOR" },
+  "Panamá": { confederation: CONFEDERATIONS.CONCACAF, code: "PA", abbreviation: "PAN" },
+  "Egipto": { confederation: CONFEDERATIONS.CAF, code: "EG", abbreviation: "EGY" },
+  "Argelia": { confederation: CONFEDERATIONS.CAF, code: "DZ", abbreviation: "ALG" },
+  "Escocia": { confederation: CONFEDERATIONS.UEFA, code: "GB", abbreviation: "SCO", isPlayoff: true },
+  "Paraguay": { confederation: CONFEDERATIONS.CONMEBOL, code: "PY", abbreviation: "PAR" },
+  "Túnez": { confederation: CONFEDERATIONS.CAF, code: "TN", abbreviation: "TUN" },
+  "Costa de Marfil": { confederation: CONFEDERATIONS.CAF, code: "CI", abbreviation: "CIV" },
+  "Uzbekistán": { confederation: CONFEDERATIONS.AFC, code: "UZ", abbreviation: "UZB" },
+  "Qatar": { confederation: CONFEDERATIONS.AFC, code: "QA", abbreviation: "QAT" },
+  "Arabia Saudita": { confederation: CONFEDERATIONS.AFC, code: "SA", abbreviation: "KSA" },
+  "Sudáfrica": { confederation: CONFEDERATIONS.CAF, code: "ZA", abbreviation: "RSA" },
   
   // POT 4
-  "Jordania": { confederation: CONFEDERATIONS.AFC, code: "JO" },
-  "Cabo Verde": { confederation: CONFEDERATIONS.CAF, code: "CV" },
-  "Ghana": { confederation: CONFEDERATIONS.CAF, code: "GH" },
-  "Curazao": { confederation: CONFEDERATIONS.CONCACAF, code: "CW" },
-  "Haití": { confederation: CONFEDERATIONS.CONCACAF, code: "HT" },
-  "Nueva Zelanda": { confederation: CONFEDERATIONS.OFC, code: "NZ" },
+  "Jordania": { confederation: CONFEDERATIONS.AFC, code: "JO", abbreviation: "JOR" },
+  "Cabo Verde": { confederation: CONFEDERATIONS.CAF, code: "CV", abbreviation: "CPV" },
+  "Ghana": { confederation: CONFEDERATIONS.CAF, code: "GH", abbreviation: "GHA" },
+  "Curazao": { confederation: CONFEDERATIONS.CONCACAF, code: "CW", abbreviation: "CUW" },
+  "Haití": { confederation: CONFEDERATIONS.CONCACAF, code: "HT", abbreviation: "HAI" },
+  "Nueva Zelanda": { confederation: CONFEDERATIONS.OFC, code: "NZ", abbreviation: "NZL" },
   
   // UEFA PLAYOFFS (Pot 4) - generic codes
-  "UEFA A": { confederation: CONFEDERATIONS.UEFA, code: "EU", isPlayoff: true, playoffGroup: "UEFA_A" },
-  "UEFA B": { confederation: CONFEDERATIONS.UEFA, code: "EU", isPlayoff: true, playoffGroup: "UEFA_B" },
-  "UEFA C": { confederation: CONFEDERATIONS.UEFA, code: "EU", isPlayoff: true, playoffGroup: "UEFA_C" },
-  "UEFA D": { confederation: CONFEDERATIONS.UEFA, code: "EU", isPlayoff: true, playoffGroup: "UEFA_D" },
+  "UEFA A": { confederation: CONFEDERATIONS.UEFA, code: "EU", abbreviation: "EUA", isPlayoff: true, playoffGroup: "UEFA_A" },
+  "UEFA B": { confederation: CONFEDERATIONS.UEFA, code: "EU", abbreviation: "EUB", isPlayoff: true, playoffGroup: "UEFA_B" },
+  "UEFA C": { confederation: CONFEDERATIONS.UEFA, code: "EU", abbreviation: "EUC", isPlayoff: true, playoffGroup: "UEFA_C" },
+  "UEFA D": { confederation: CONFEDERATIONS.UEFA, code: "EU", abbreviation: "EUD", isPlayoff: true, playoffGroup: "UEFA_D" },
   
   // INTERNATIONAL PLAYOFFS (Pot 4)
   "FIFA 1": { 
     confederation: CONFEDERATIONS.INTER, 
     code: "FIFA",
+    abbreviation: "FIFA1",
     isPlayoff: true, 
     playoffGroup: "FIFA_1"
   },
   "FIFA 2": { 
     confederation: CONFEDERATIONS.INTER, 
     code: "FIFA",
+    abbreviation: "FIFA2",
     isPlayoff: true, 
     playoffGroup: "FIFA_2"
   }
@@ -100,12 +104,14 @@ const TEAMS_CONFEDERATION_MAP: Record<string, {
 const createTeam = (name: string): Team => {
   const teamData = TEAMS_CONFEDERATION_MAP[name] || { 
     confederation: CONFEDERATIONS.INTER,
-    code: "XX"
+    code: "XX",
+    abbreviation: "XXX"
   }
   return {
     name,
     confederation: teamData.confederation,
     code: teamData.code,
+    abbreviation: teamData.abbreviation,
     isHost: teamData.isHost,
     fifaRanking: teamData.fifaRanking,
     isPlayoff: teamData.isPlayoff,
@@ -181,6 +187,11 @@ export const ALL_TEAMS = [
   ...TEAMS_BY_SEEDING.seed3,
   ...TEAMS_BY_SEEDING.seed4
 ];
+
+export function getTeamAbbreviation(teamName: string): string {
+  const team = ALL_TEAMS.find(t => t.name === teamName)
+  return team?.abbreviation || "XXX"
+}
 
 // (API de FlagCDN)
 export function getFlagUrl(code: string, size: 'w20' | 'w40' | 'w80' = 'w40'): string {
@@ -262,52 +273,89 @@ export const KNOCKOUT_MATCHES = {
 export interface PlayoffOption {
   name: string
   code: string
+  abbreviation: string 
   confederation: string
   isPlaceholder?: boolean
 }
 
 export const PLAYOFF_OPTIONS: Record<string, PlayoffOption[]> = {
   UEFA_A: [
-    { name: "Ganador UEFA A", code: "EU", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
-    { name: "Bosnia y Herzegovina", code: "BA", confederation: CONFEDERATIONS.UEFA },
-    { name: "Italia", code: "IT", confederation: CONFEDERATIONS.UEFA },
-    { name: "Irlanda del Norte", code: "GB", confederation: CONFEDERATIONS.UEFA },
-    { name: "Gales", code: "GB", confederation: CONFEDERATIONS.UEFA }
+    { name: "Ganador UEFA A", code: "EU", abbreviation: "EUA", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
+    { name: "Bosnia y Herzegovina", code: "BA", abbreviation: "BIH", confederation: CONFEDERATIONS.UEFA },
+    { name: "Italia", code: "IT", abbreviation: "ITA", confederation: CONFEDERATIONS.UEFA },
+    { name: "Irlanda del Norte", code: "GB", abbreviation: "NIR", confederation: CONFEDERATIONS.UEFA },
+    { name: "Gales", code: "GB", abbreviation: "WAL", confederation: CONFEDERATIONS.UEFA }
   ],
   UEFA_B: [
-    { name: "Ganador UEFA B", code: "EU", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
-    { name: "Albania", code: "AL", confederation: CONFEDERATIONS.UEFA },
-    { name: "Polonia", code: "PL", confederation: CONFEDERATIONS.UEFA },
-    { name: "Suecia", code: "SE", confederation: CONFEDERATIONS.UEFA },
-    { name: "Ucrania", code: "UA", confederation: CONFEDERATIONS.UEFA }
+    { name: "Ganador UEFA B", code: "EU", abbreviation: "EUB", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
+    { name: "Albania", code: "AL", abbreviation: "ALB", confederation: CONFEDERATIONS.UEFA },
+    { name: "Polonia", code: "PL", abbreviation: "POL", confederation: CONFEDERATIONS.UEFA },
+    { name: "Suecia", code: "SE", abbreviation: "SWE", confederation: CONFEDERATIONS.UEFA },
+    { name: "Ucrania", code: "UA", abbreviation: "UKR", confederation: CONFEDERATIONS.UEFA }
   ],
   UEFA_C: [
-    { name: "Ganador UEFA C", code: "EU", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
-    { name: "Kosovo", code: "XK", confederation: CONFEDERATIONS.UEFA },
-    { name: "Rumanía", code: "RO", confederation: CONFEDERATIONS.UEFA },
-    { name: "Eslovaquia", code: "SK", confederation: CONFEDERATIONS.UEFA },
-    { name: "Turquía", code: "TR", confederation: CONFEDERATIONS.UEFA }
+    { name: "Ganador UEFA C", code: "EU", abbreviation: "EUC", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
+    { name: "Kosovo", code: "XK", abbreviation: "KOS", confederation: CONFEDERATIONS.UEFA },
+    { name: "Rumanía", code: "RO", abbreviation: "ROU", confederation: CONFEDERATIONS.UEFA },
+    { name: "Eslovaquia", code: "SK", abbreviation: "SVK", confederation: CONFEDERATIONS.UEFA },
+    { name: "Turquía", code: "TR", abbreviation: "TUR", confederation: CONFEDERATIONS.UEFA }
   ],
   UEFA_D: [
-    { name: "Ganador UEFA D", code: "EU", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
-    { name: "Chequia", code: "CZ", confederation: CONFEDERATIONS.UEFA },
-    { name: "Dinamarca", code: "DK", confederation: CONFEDERATIONS.UEFA },
-    { name: "Macedonia del Norte", code: "MK", confederation: CONFEDERATIONS.UEFA },
-    { name: "República de Irlanda", code: "IE", confederation: CONFEDERATIONS.UEFA }
+    { name: "Ganador UEFA D", code: "EU", abbreviation: "EUD", confederation: CONFEDERATIONS.UEFA, isPlaceholder: true },
+    { name: "Chequia", code: "CZ", abbreviation: "CZE", confederation: CONFEDERATIONS.UEFA },
+    { name: "Dinamarca", code: "DK", abbreviation: "DEN", confederation: CONFEDERATIONS.UEFA },
+    { name: "Macedonia del Norte", code: "MK", abbreviation: "MKD", confederation: CONFEDERATIONS.UEFA },
+    { name: "República de Irlanda", code: "IE", abbreviation: "IRL", confederation: CONFEDERATIONS.UEFA }
   ],
   FIFA_1: [
-    { name: "Ganador FIFA 1", code: "FIFA", confederation: CONFEDERATIONS.INTER, isPlaceholder: true },
-    { name: "R.D del Congo", code: "CD", confederation: CONFEDERATIONS.CAF },
-    { name: "Jamaica", code: "JM", confederation: CONFEDERATIONS.CONCACAF },
-    { name: "Nueva Caledonia", code: "NC", confederation: CONFEDERATIONS.OFC }
+    { name: "Ganador FIFA 1", code: "FIFA", abbreviation: "FIFA1", confederation: CONFEDERATIONS.INTER, isPlaceholder: true },
+    { name: "R.D del Congo", code: "CD", abbreviation: "COD", confederation: CONFEDERATIONS.CAF },
+    { name: "Jamaica", code: "JM", abbreviation: "JAM", confederation: CONFEDERATIONS.CONCACAF },
+    { name: "Nueva Caledonia", code: "NC", abbreviation: "NCL", confederation: CONFEDERATIONS.OFC }
   ],
   FIFA_2: [
-    { name: "Ganador FIFA 2", code: "FIFA", confederation: CONFEDERATIONS.INTER, isPlaceholder: true },
-    { name: "Bolivia", code: "BO", confederation: CONFEDERATIONS.CONMEBOL },
-    { name: "Irak", code: "IQ", confederation: CONFEDERATIONS.AFC },
-    { name: "Surinam", code: "SR", confederation: CONFEDERATIONS.CONCACAF }
+    { name: "Ganador FIFA 2", code: "FIFA", abbreviation: "FIFA2", confederation: CONFEDERATIONS.INTER, isPlaceholder: true },
+    { name: "Bolivia", code: "BO", abbreviation: "BOL", confederation: CONFEDERATIONS.CONMEBOL },
+    { name: "Irak", code: "IQ", abbreviation: "IRQ", confederation: CONFEDERATIONS.AFC },
+    { name: "Surinam", code: "SR", abbreviation: "SUR", confederation: CONFEDERATIONS.CONCACAF }
   ]
 } as const
+
+export function getDynamicAbbreviation(teamName: string, playoffSelections?: Record<string, string>): string {
+  const team = getTeamInfo(teamName)
+  if (team?.abbreviation) return team.abbreviation
+  
+  if (playoffSelections) {
+    for (const [group, options] of Object.entries(PLAYOFF_OPTIONS)) {
+      const placeholder = options.find(opt => opt.isPlaceholder && opt.name === teamName)
+      if (placeholder) {
+        const selectedTeamName = playoffSelections[group]
+        if (selectedTeamName && selectedTeamName !== placeholder.name) {
+          const selectedOption = options.find(opt => opt.name === selectedTeamName)
+          if (selectedOption?.abbreviation) return selectedOption.abbreviation
+        }
+        return placeholder.abbreviation
+      }
+    }
+    
+    for (const [group, selectedTeamName] of Object.entries(playoffSelections)) {
+      if (selectedTeamName === teamName) {
+        const options = PLAYOFF_OPTIONS[group as keyof typeof PLAYOFF_OPTIONS]
+        if (options) {
+          const selectedOption = options.find(opt => opt.name === selectedTeamName)
+          if (selectedOption?.abbreviation) return selectedOption.abbreviation
+        }
+      }
+    }
+  }
+  
+  for (const options of Object.values(PLAYOFF_OPTIONS)) {
+    const teamOption = options.find(opt => opt.name === teamName)
+    if (teamOption?.abbreviation) return teamOption.abbreviation
+  }
+  
+  return "XXX"
+}
 
 export function getPlayoffTeam(playoffGroup: string, selectedOption?: string): Team | undefined {
   if (!selectedOption) return undefined
